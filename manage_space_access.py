@@ -14,6 +14,7 @@ class Confluence_api():
 
     def __init__(self):
         self.spacelist = []
+        self.space_permission_list = []
         setup_params = readFromCsv('setup.csv')
         self.base_url = setup_params['baseurl']
         self.username = setup_params['username']
@@ -21,6 +22,7 @@ class Confluence_api():
         self.auth = HTTPBasicAuth(self.username, self.token)
 
     def set_space_permission(self, space_key, usergroup):
+        #todo endre slik at metoden også hånterer personer grupper og apper
         url = f'https://{self.base_url}/wiki/rest/api/space/{space_key}/permission'
         headers = {
                    "Accept": "application/json",
@@ -35,7 +37,7 @@ class Confluence_api():
                                             "key": "read",
                                             "target": "space"
                                             },
-                              #"_links": {}
+                              "_links": {}
                                 })
         # Send API-forespørselen
         response = requests.request(
@@ -47,6 +49,22 @@ class Confluence_api():
         # Sjekk svaret fra serveren
         if response.status_code == 200:
             print("Lesetilgang er gitt til brukergruppen 'brukere'.")
+
+            print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))
+
+        else:
+            print("En feil oppstod. Statuskode:", response.status_code)
+            print("Feilmelding:", response.text)
+
+    def delete_space_permission(self, space_key, id):
+        url = f'https://{self.base_url}/wiki/rest/api/space/{space_key}/permission/{id}'
+        response = requests.request(
+            "DELETE",
+            url,
+            auth=self.auth
+        )
+        if response.status_code == 200:
+            print(f'Tilgangen til spacet: {space_key} er sletter')
             print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))
 
         else:
@@ -54,4 +72,23 @@ class Confluence_api():
             print("Feilmelding:", response.text)
 
 
+    def get_space_permissions(self):
+        url =  f'https://{self.base_url}/wiki/rest/api/space?expand=permissions'
+        response = requests.request(
+            'GET',
+            url,
+            auth=self.auth
+        )
+        if response.status_code == 200:
+            print(f'Lastet alle space persmissions ok')
+            result = json.loads(response.text)
+            self.space_permission_list = result['results']
+        else:
+            print("En feil oppstod. Statuskode:", response.status_code)
+            print("Feilmelding:", response.text)
+
+    def list_spaces(self):
+        if len(self.space_permission_list) > 0:
+            for space in self.space_permission_list:
+                print(f' Space: {space["name"]}  Space type: {space["type"]}')
 

@@ -1,0 +1,14 @@
+Space
+	Space_details
+		Name
+		Id
+		Key
+	Users
+		UserType(user, group, App,?
+		Displayname
+		Id
+		Email
+		Permission
+			Permission id
+			Operation
+			Type
