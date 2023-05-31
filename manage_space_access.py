@@ -7,14 +7,15 @@ def readFromCsv(filename):
     with open(filename, 'r') as f:
         dict_reader = DictReader(f)
         list_of_dict = list(dict_reader)
-        print(list_of_dict)
+        # print(list_of_dict)
     return list_of_dict[0]
 
 class Confluence_api():
 
     def __init__(self):
         self.spacelist = []
-        self.space_permission_list = []
+        self.space_permission_list_raw = []
+        self.space_permission_list=[]
         setup_params = readFromCsv('setup.csv')
         self.base_url = setup_params['baseurl']
         self.username = setup_params['username']
@@ -82,13 +83,28 @@ class Confluence_api():
         if response.status_code == 200:
             print(f'Lastet alle space persmissions ok')
             result = json.loads(response.text)
-            self.space_permission_list = result['results']
+            self.space_permission_list_raw = result['results']
         else:
             print("En feil oppstod. Statuskode:", response.status_code)
             print("Feilmelding:", response.text)
 
     def list_spaces(self):
-        if len(self.space_permission_list) > 0:
-            for space in self.space_permission_list:
+        if len(self.space_permission_list_raw) > 0:
+            for space in self.space_permission_list_raw:
                 print(f' Space: {space["name"]}  Space type: {space["type"]}')
+
+    def decode_space_persmissions(self):
+        if len(self.space_permission_list_raw) > 0:
+            for space in self.space_permission_list_raw:
+                space_details = {'id': space['id'],
+                                 'key': space['key'],
+                                 'name': space['name'],
+                                 'type': space['type']}
+                self.space_permission_list.append(space_details)
+                space_permissions = space['permissions']
+                for permission in space_permissions:
+                    permission_id = permission['id']
+
+
+
 
