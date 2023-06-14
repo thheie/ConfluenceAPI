@@ -51,12 +51,12 @@ class Confluence_api():
                     }
         payload = json.dumps({
                               "subject": {
-                                            "type": "group",
-                                            "identifier": "test1_user_group"
+                                            "type":type,
+                                            "identifier":identifier
                                             },
                               "operation": {
-                                            "key": "read",
-                                            "target": "space"
+                                            "key": key,
+                                            "target": target
                                             },
                               "_links": {}
                                 })
@@ -69,10 +69,10 @@ class Confluence_api():
                                  headers=headers)
         # Sjekk svaret fra serveren
         if response.status_code == 200:
-            logger(f'Lesetilgang er gitt til brukerguppen {usergroup}')
+            print(f'Lesetilgang er gitt til {key}, {identifier}')
         else:
-            logger.info(f'En feil oppsto: Statuskode: {response.status_code}')
-            logger.debug(f'Feilmelding: {response.text}')
+            print(f'En feil oppsto: Statuskode: {response.status_code}')
+            print(f'Feilmelding: {response.text}')
         return response.status_code
     def delete_space_permission(self, space_key, id):
         '''
@@ -117,23 +117,51 @@ class Confluence_api():
     def decode_space_persmissions(self):
         if len(self.space_permission_list_raw) > 0:
             for space in self.space_permission_list_raw:
-                space_details = {'id': space['id'],
-                                 'key': space['key'],
-                                 'name': space['name'],
-                                 'type': space['type']}
-                self.space_permission_list.append(space_details)
+                # self.space_permission_list.append(space_details)
                 space_permissions = space['permissions']
                 for permission in space_permissions:
-                    permission_id = permission['id']
+                    record_compleate = True
+                    permission_details = {}
+                    permission_details['space_id'] = space['id']
+                    permission_details['space_key'] = space['key']
+                    permission_details['space_name'] = space['name']
+                    permission_details['space_type'] = space['type']
+                    permission_details['permissions_id'] = permission['id']
                     if 'subjects' in permission:
                         if 'user' in permission['subjects']:
                             account_details = permission['subjects']['user']['results'][0]
+                            if account_details['accountType'] == 'atlassian':
+                                permission_details['user_id']=account_details['accountId']
+                                permission_details['user_email']=account_details['email']
+                                permission_details['user_public_name']=account_details['publicName']
+                            else:
+                                record_compleate = False
                         elif 'group' in permission['subjects']:
                             account_details = permission['subjects']['group']['results'][0]
+                            permission_details['group_id'] = account_details['name']
                         else:
-                            print (permission)
+                            # print (permission)
+                            record_compleate = False
                     else:
-                        print (permission)
+                        # print (permission)
+                        record_compleate = False
+                    if 'operation' in permission:
+                        permission_details['operation']=permission['operation']['operation']
+                        permission_details['target_type']=permission['operation']['targetType']
+                    else:
+                        print(permission)
+                        record_compleate = False
+                    if record_compleate:
+                        self.space_permission_list.append(permission_details)
+            for item in self.space_permission_list:
+                if 'user_id' in item:
+                    if item['space_key'] == 'ACME':
+                        print(item)
+
+
+
+
+
     def find_types(self):
         user_types = []
         if len(self.space_permission_list_raw) > 0:
@@ -149,6 +177,15 @@ class Confluence_api():
                     elif 'operation' not in permission:
                         print(permission)
             print(user_types)
+
+    def bach_delete_permissions(self, spacekey, user_email='', group_name = ''):
+        if len(self.space_permission_list) > 0:
+            for permission in self.space_permission_list:
+                if len(user_email) > 0:
+                    if 'user_email' in permission:
+                        if permission['space_key'] == spacekey and permission['user_email'] == user_email:
+                            self.delete_space_permission(spacekey, permission['permissions_id'])
+
 
 
 
