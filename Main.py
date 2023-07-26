@@ -7,7 +7,10 @@ def main():
     confluence_api.get_space_permissions()
     # confluence_api.find_types()
     confluence_api.decode_space_persmissions()
-    confluence_api.bach_delete_permissions('ACME', user_email='thh@computas.com')
+    # confluence_api.group_permissions()
+    # confluence_api.bach_delete_permissions('ACME', user_email='thh@computas.com')
+    # confluence_api.write_to_excel()
+
 
 if __name__ == '__main__':
     main()

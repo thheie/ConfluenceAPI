@@ -1,14 +1,32 @@
-Space
-	Space_details
-		Name
-		Id
-		Key
-	Users
-		UserType(user, group, App,?
-		Displayname
-		Id
-		Email
-		Permission
-			Permission id
-			Operation
-			Type
+
+
+
+self.space_permission_list
+    space_id
+    space_key
+    space_name
+    space_type
+    permissions_id
+    user_id
+    user_email (user only)
+    user_public_name (user only)
+    user_type
+
+self.spect_permissision_tab
+    user_id
+    user_type
+    space_key
+    view_space
+    delete_own
+    add_page
+    archive_page
+    delete_page
+    add_blogg
+    delete_blogg
+    add_comment
+    delete_comment
+    add_attachment
+    delete_attachment
+    add_delete_restrictions
+    export_space
+    administer_space
