@@ -11,7 +11,7 @@ def main():
     # confluence_api.find_types()
     # confluence_api.decode_space_persmissions()
     # confluence_api.group_permissions()
-    # confluence_api.bach_delete_permissions('ACME', user_email='thh@computas.com')
+    # confluence_api.bach_delete_permissions('NOR', user_email='thh@computas.com')
     # confluence_api.bach_delete_user_permissions()
     #confluence_api.write_to_excel()
     confluence_api.replace_user_groups('test group old', 'test group new', space_list=['ID','NOR'])

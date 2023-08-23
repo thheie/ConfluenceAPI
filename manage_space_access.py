@@ -86,6 +86,7 @@ class Confluence_api():
             print(f'En feil oppsto: Statuskode: {response.status_code}')
             print(f'Feilmelding: {response.text}')
         return response.status_code
+
     def delete_space_permission(self, space_key, id):
         '''
         Deleite a spesicic space permission
@@ -106,9 +107,6 @@ class Confluence_api():
             logger.critical(f'{response.text}')
         return response.status_code
 
-
-
-
     def get_space_permissions(self,load_space_list=[]):
         '''
         Loads all permissions for the spaces listed in the file "confluence_space.csv"
@@ -118,7 +116,7 @@ class Confluence_api():
         space_loaded = 0
         space_list = readFromCsv('confluence_space.csv')
         for space in space_list:
-            if space['space_key'] in load_space_list or len(space_list) == 0:
+            if space['space_key'] in load_space_list or len(load_space_list) == 0:
                 spacekey = space['space_key']
                 url =  f'https://{self.base_url}/wiki/rest/api/space/{spacekey}?expand=permissions'
                 headers = {'Accept': 'application/json'}
@@ -179,14 +177,14 @@ class Confluence_api():
                                                 'type': user_type
                                                 }
                                 user_defined = True
-                            # elif account_details['accountType'] == 'app':
-                            #     user_type = 'app'
-                            #     user_id = account_details['accountId']
-                            #     user_details = {'user_id': user_id,
-                            #                     'name': account_details['publicName'],
-                            #                     'type': user_type
-                            #                     }
-                            #     user_defined = True
+                            elif account_details['accountType'] == 'app':
+                                user_type = 'app'
+                                user_id = account_details['accountId']
+                                user_details = {'user_id': user_id,
+                                                'name': account_details['publicName'],
+                                                'type': user_type
+                                                }
+                                user_defined = True
                         elif 'group' in permission['subjects']:
                             account_details = permission['subjects']['group']['results'][0]
                             user_type = 'group'
@@ -289,7 +287,7 @@ class Confluence_api():
                                 print(log_text)
                                 logger.info(log_text)
 
-    def replace_user_groups(self,usergrp_new, usergrp_old, space_list = []):
+    def replace_user_groups(self,usergrp_old, usergrp_new, space_list = []):
         '''
 
         :param usergrp_new: The name of the new user group. The goroup that will get the same permission as usergrp_old
@@ -298,10 +296,15 @@ class Confluence_api():
         :return: None
         '''
         self.decode_space_persmissions(space_list=space_list)
+        group_not_found = True
         for group in self.space_user_dict:
             if self.space_user_dict[group]['name'] == usergrp_old:
                 id_usergrp_old = self.space_user_dict[group]['user_id']
+                group_not_found = false
                 break
+        if group_not_found:
+            print('Group not fond')
+            id_usergrp_old = ''
         for space in self.space_dict:
             view_space_not_set = True
             view_space_permission_found = False
